@@ -1,0 +1,94 @@
+//1
+db.createCollection("books", { validator: { title: { $type: "string" } } })
+//1
+
+//2
+db.authors.insertOne({ name:"Omar Hashad", nationality:"Egyptian" })
+//2
+
+//3
+db.createCollection("logs", { capped: true, size: 1024, max: 100 })
+//3
+
+//4
+db.books.createIndex({title:1})
+//4
+
+//5
+db.books.insertOne({ title:"AtomicHabits", author:"James Clear", year: "2000", genres:"Self Development" })
+//5
+
+//6
+db.books.insertMany([
+  {
+    "title": "Future",
+    "author": "George Orwell",
+    "year": 2020,
+    "genres": ["Science Fiction"]
+  },
+  {
+    "title": "To Kill a Mockingbird",
+    "author": "Harper Lee",
+    "year": 1960,
+    "genres": ["Classic", "Fiction"]
+  },
+  {
+    "title": "Brave New World",
+    "author": "Aldous Huxley",
+    "year": 2006,
+    "genres": ["Dystopian", "Science Fiction"]
+  }
+])
+//6
+
+//7
+db.logs.insertOne({ book_id: new ObjectId("6983b7950b19bf24370173b5"), action:"borrow" })
+//7
+
+//8
+db.books.updateOne({ title: "Feature" }, { $set: { year: 2022 } })
+//8
+
+//9
+db.books.findOne({ title: title })
+//9
+
+//10
+db.books.find({ year: { $gte:1990, $lte:2010} })
+//10
+
+//11
+db.books.find({ genres: "Science Fiction" })
+//11
+
+//12
+db.books.find({}).skip(2).limit(3).sort({ year: -1 })
+//12
+
+//13
+db.books.find({}).sort({ year: 1 })
+//13
+
+//14
+db.books.find({ genres: { $nin: ["Horror", "Science Fiction"] } })
+//14
+
+//15
+db.books.deleteMany({ year: { $lt:2000 } })
+//15
+
+//16
+db.books.aggregate([{ $match: { year: { $gt: 2000 } } }, { $sort: { year: -1 } }])
+//16
+
+//17
+db.books.aggregate([{ $match: { year: { $gt: 2000 } } }, { $sort: { year: -1 } }])
+//17
+
+//18
+db.books.aggregate([{ $unwind: "$genres" }, { $project: { title: 1, genres: 1, _id: 0 } }])
+//18
+
+//19
+db.logs.aggregate([{ $lookup: { from: "books", localField: "book_id", foreignField: "_id", as: "book_details" } }, { $unwind: "$book_details" }, { $group: { _id: "$action", book_details: { $push: { title: "$book_details.title", author: "$book_details.author", year: "$book_details.year" } } } }, { $project: { _id: 0, action: "$_id", book_details: 1 } }])
+//19
